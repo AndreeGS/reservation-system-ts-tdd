@@ -69,4 +69,117 @@ describe("BookingService", () => {
         expect(saveBooking).not.toBeNull();
         expect(saveBooking?.getId()).toEqual(result.getId());
     });
+
+    it("deve lançar um erro quando a propriedade não for encontrada", async () => {
+        mockPropertyService.findPropertyById.mockResolvedValue(null);
+
+        const bookingDTO: CreateBookingDTO = {
+            propertyId: "1",
+            guestId: "1",
+            startDate: new Date("2024-12-20"),
+            endDate: new Date("2024-12-25"),
+            guestCount: 2
+        };
+
+        await expect(bookingService.createBooking(bookingDTO)).rejects.toThrow(
+            "Propriedade não encontrada."
+        );
+    });
+
+    it("deve lançar um erro quando o usuário não for encontrado", async () => {
+        const mockProperty = {
+            getId: jest.fn().mockReturnValue("1"),
+        } as any;
+
+        mockedUserService.findUserById.mockResolvedValue(null);
+        mockPropertyService.findPropertyById.mockResolvedValue(mockProperty);
+
+        const bookingDTO: CreateBookingDTO = {
+            propertyId: "1",
+            guestId: "1",
+            startDate: new Date("2024-12-20"),
+            endDate: new Date("2024-12-25"),
+            guestCount: 2
+        };
+
+        await expect(bookingService.createBooking(bookingDTO)).rejects.toThrow(
+            "Usuário não encontrado."
+        );
+    });
+
+    it("deve lançar um erro ao tentar criar reserva para um período já reservado", async () => {
+        const mockProperty = {
+            getId: jest.fn().mockReturnValue("1"),
+            isAvailable: jest.fn().mockReturnValue(true),
+            validateGuestCount: jest.fn(),
+            calculateTotalPrice: jest.fn().mockReturnValue(500),
+            addBooking: jest.fn()
+        } as any;
+
+        const mockUser = {
+            getId: jest.fn().mockReturnValue("1"),
+        } as any;
+
+        mockPropertyService.findPropertyById.mockResolvedValue(mockProperty);
+        mockedUserService.findUserById.mockResolvedValue(mockUser);
+
+        const bookingDTO: CreateBookingDTO = {
+            propertyId: "1",
+            guestId: "1",
+            startDate: new Date("2024-12-20"),
+            endDate: new Date("2024-12-25"),
+            guestCount: 2
+        };
+
+        const result = await bookingService.createBooking(bookingDTO);
+
+        mockProperty.isAvailable.mockReturnValue(false);
+        mockProperty.addBooking.mockImplementationOnce(() => {
+            throw new Error("A propriedade não está disponível para o período selecionado.");
+        });
+
+        await expect(bookingService.createBooking(bookingDTO)).rejects.toThrow(
+            "A propriedade não está disponível para o período selecionado."
+        );
+    });
+
+    it("deve cancelar uma reserva existente usando o repositório fake", async () => {
+        const mockProperty = {
+            getId: jest.fn().mockReturnValue("1"),
+            isAvailable: jest.fn().mockReturnValue(true),
+            validateGuestCount: jest.fn(),
+            calculateTotalPrice: jest.fn().mockReturnValue(500),
+            addBooking: jest.fn()
+        } as any;
+
+        const mockUser = {
+            getId: jest.fn().mockReturnValue("1"),
+        } as any;
+
+        mockPropertyService.findPropertyById.mockResolvedValue(mockProperty);
+        mockedUserService.findUserById.mockResolvedValue(mockUser);
+
+        const bookingDTO: CreateBookingDTO = {
+            propertyId: "1",
+            guestId: "1",
+            startDate: new Date("2024-12-20"),
+            endDate: new Date("2024-12-25"),
+            guestCount: 2
+        };
+
+        const booking = await bookingService.createBooking(bookingDTO);
+
+        const spyFindById = jest.spyOn(fakeBookingRepository, "findById");
+
+        await bookingService.cancelBooking(booking.getId());
+
+        const canceledBooking = await fakeBookingRepository.findById(
+            booking.getId()
+        );
+
+        expect(canceledBooking?.getStatus()).toBe("CANCELED");
+        expect(spyFindById).toHaveBeenCalledWith(booking.getId());
+        expect(spyFindById).toHaveBeenCalledTimes(2);
+        spyFindById.mockRestore();
+    });
 });
