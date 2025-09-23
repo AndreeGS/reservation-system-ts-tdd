@@ -6,23 +6,23 @@ import { RefundRuleFactory } from "../cancelation/refund_rule_factory";
 export class Booking {
     private id: string;
     private property: Property;
-    private user: User;
+    private guest: User;
     private dateRange: DateRange;
-    private numberOfGuests: number;
+    private guestCount: number;
     private status: "CONFIRMED" | "CANCELED" = "CONFIRMED";
     private totalPrice: number;
 
     constructor(
         id: string,
         property: Property,
-        user: User,
+        guest: User,
         dateRange: DateRange,
-        numberOfGuests: number
+        guestCount: number
     ) {
-        if (numberOfGuests <= 0) {
+        if (guestCount <= 0) {
             throw new Error("O número de hóspedes deve ser maior que zero");
         }
-        property.validateGuestCount(numberOfGuests);
+        property.validateGuestCount(guestCount);
 
         if (!property.isAvailable(dateRange)) {
             throw new Error("A propriedade não está disponível para o período selecionado.");
@@ -30,9 +30,9 @@ export class Booking {
 
         this.id = id;
         this.property = property;
-        this.user = user;
+        this.guest = guest;
         this.dateRange = dateRange;
-        this.numberOfGuests = numberOfGuests;
+        this.guestCount = guestCount;
         this.totalPrice = property.calculateTotalPrice(dateRange);
         this.status = "CONFIRMED";
 
@@ -48,15 +48,15 @@ export class Booking {
     }
 
     getUser(): User {
-        return this.user;
+        return this.guest;
     }
 
     getDateRange(): DateRange {
         return this.dateRange;
     }
 
-    getNumberOfGuests(): number {
-        return this.numberOfGuests;
+    getGuestCount(): number {
+        return this.guestCount;
     }
 
     getStatus(): "CONFIRMED" | "CANCELED" {
@@ -65,6 +65,10 @@ export class Booking {
 
     getTotalPrice(): number {
         return this.totalPrice;
+    }
+
+    getGuest(): User {
+        return this.guest;
     }
 
     cancel(currentDate: Date): void {

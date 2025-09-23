@@ -11,11 +11,17 @@
   "description": "",
   "devDependencies": {
     "@types/jest": "^30.0.0",
+    "@types/node": "^24.5.2",
+    "@types/uuid": "^10.0.0",
     "jest": "^30.0.5",
-    "ts-jest": "^29.4.2",
-    "typescript": "^5.9.2"
+    "ts-jest": "^29.4.2"
   },
   "dependencies": {
-    "uuid": "^13.0.0"
+    "reflect-metadata": "^0.2.2",
+    "sqlite3": "^5.1.7",
+    "ts-node": "^10.9.2",
+    "typeorm": "^0.3.26",
+    "uuid": "^13.0.0",
+    "typescript": "^5.9.2"
   }
 }
