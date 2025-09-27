@@ -26,7 +26,7 @@ export class BookingEntity {
     @Column({ type: "date", name: "end_date" })
     endDate!: Date;
 
-    @Column({ name: "guests_count" })
+    @Column({ name: "guest_count" })
     guestCount!: number;
 
     @Column({ name: "total_price", type: "decimal" })
