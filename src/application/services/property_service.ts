@@ -7,6 +7,4 @@ export class PropertyService {
     async findPropertyById(id: string): Promise<Property | null> {
         return this.propertyRepository.findById(id);
     }
-
-    
 }

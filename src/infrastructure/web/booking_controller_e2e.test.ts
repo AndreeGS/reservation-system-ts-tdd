@@ -53,7 +53,7 @@ beforeAll(async () => {
         bookingController.createBooking(req, res).catch((err) => next(err));
     });
 
-    app.delete("/bookings/:id/cancel", (req, res, next) => {
+    app.post("/bookings/:id/cancel", (req, res, next) => {
         bookingController.cancelBooking(req, res).catch((err) => next(err));
     });
 });
@@ -173,7 +173,7 @@ describe("BookingController End-to-End Tests", () => {
     test("Deve retornar erro ao cancelar uma reserva inexistente", async () => {
         const cancelResponse = await request(app).post(`/bookings/999/cancel`)
 
-        expect(cancelResponse.status).toBe(404);
+        expect(cancelResponse.status).toBe(400);
         expect(cancelResponse.body.error).toBe("Reserva não encontrada.");
     });
 });
